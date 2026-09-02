@@ -18,5 +18,5 @@ allowed-tools: Bash(node:*), Bash(open:*), Read, Edit
    - 何を頼まれ（prompt）、何を作り／直し（files, commands）、結果どうなったか（errors, reply）の順。
    - 数字は digest にあるものだけ使う。推測で補わない。
 3. `notePath` の Markdown 内の `<!-- summary:start -->` と `<!-- summary:end -->` の間にある `（未記入）` を、書いたまとめに Edit で置き換える。
-4. `node "${CLAUDE_PLUGIN_ROOT}/scripts/render-html.mjs" <日付>` を実行する。stdout が HTML のパス。
-5. macOS なら `open <HTMLパス>` で開く。最後に Markdown と HTML のパスを 2 行で表示する。
+4. **Artifact ツールが使える場合（基本こちら）**: `node "${CLAUDE_PLUGIN_ROOT}/scripts/render-artifact.mjs" <日付>` を実行し、stdout のファイルを Artifact として公開する（title: `作業ノート <日付>`、favicon: 📝。同じ日付の再生成は同じファイルパスなので同一 URL に再公開される）。最後に Artifact URL と Markdown のパスを表示する。
+5. **Artifact ツールがない場合**: `node "${CLAUDE_PLUGIN_ROOT}/scripts/render-html.mjs" <日付>` を実行し、macOS なら `open <HTMLパス>` で開く。Markdown と HTML のパスを表示する。

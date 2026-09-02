@@ -51,7 +51,7 @@ Claude Code の中で:
 
 1. `scripts/build-note.mjs` が対象日の transcript を集計して Markdown を作る
 2. Claude が集計結果（短縮版 digest）を読んで「本日のまとめ」を 3〜6 行で書き込む
-3. `scripts/render-html.mjs` が HTML 化し、macOS なら自動で開く
+3. 基本は **Artifact として公開**（要約 / ログの 2 タブ、URL で共有可能）。Artifact が使えない環境では `scripts/render-html.mjs` がローカル HTML を作って開く
 
 ## ノートの内容
 

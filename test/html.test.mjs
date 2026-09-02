@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { markdownToHtml, renderPage, renderNotePage } from '../scripts/lib/html.mjs';
+import { markdownToHtml, renderPage, renderNotePage, renderArtifact } from '../scripts/lib/html.mjs';
 
 test('headings, lists, inline code and paragraphs are converted', () => {
   const html = markdownToHtml('# 見出し\n\n## 小見出し\n\n- 編集: `a.ts`\n- 実行\n\n段落 <b>');
@@ -43,4 +43,13 @@ test('renderNotePage splits sections into summary and log tabs', () => {
   for (const h of ['タイムライン', '作成・変更したファイル', '実行したコマンド', 'エラー・失敗']) assert.match(log, new RegExp(`<h2>${h}</h2>`));
   assert.match(page, /<section id="tab-log" hidden>/);
   assert.match(page, /<section id="tab-summary">/);
+});
+
+test('renderArtifact emits title, style and tabs without a doctype skeleton', () => {
+  const md = '# 作業ノート 2026-09-02\n\n## 本日のまとめ\n\nx\n\n## タイムライン\n\n- y';
+  const art = renderArtifact('作業ノート 2026-09-02', md);
+  assert.match(art, /^<title>作業ノート 2026-09-02<\/title>/);
+  assert.match(art, /<style>/);
+  assert.match(art, /data-tab="log"/);
+  assert.doesNotMatch(art, /<!doctype|<html|<head>|<body>/i);
 });

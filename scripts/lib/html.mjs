@@ -45,9 +45,13 @@ export function markdownToHtml(md) {
   return out.join('\n');
 }
 
-const CSS = `
-:root{color-scheme:light dark;--fg:#1f2328;--bg:#fff;--muted:#59636e;--line:#d1d9e0;--code:#f6f8fa}
-@media(prefers-color-scheme:dark){:root{--fg:#e6edf3;--bg:#0d1117;--muted:#9198a1;--line:#3d444d;--code:#161b22}}
+// ローカル HTML 用テーマ (OS 設定に追従)
+const FILE_THEME = `
+:root{color-scheme:light dark;--fg:#1f2328;--bg:#fff;--muted:#59636e;--line:#d1d9e0;--code:#f6f8fa;--accent:#1f2328}
+@media(prefers-color-scheme:dark){:root{--fg:#e6edf3;--bg:#0d1117;--muted:#9198a1;--line:#3d444d;--code:#161b22;--accent:#e6edf3}}
+`.trim();
+
+const BASE_CSS = `
 body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
 main{max-width:860px;margin:0 auto;padding:32px 20px 64px}
 h1{font-size:1.7em;border-bottom:1px solid var(--line);padding-bottom:.3em}
@@ -65,10 +69,12 @@ footer{margin-top:3em;color:var(--muted);font-size:.85em}
 .tabs button.active{background:var(--bg);color:var(--fg);font-weight:600;position:relative;top:1px}
 `.trim();
 
+const CSS = FILE_THEME + '\n' + BASE_CSS;
+
 const SUMMARY_SECTIONS = new Set(['本日のまとめ', 'セッション一覧', '統計']);
 
-/** Markdown を「要約」「ログ」の 2 タブ構成のページにする。未知の h2 セクションはログ側 */
-export function renderNotePage(title, md) {
+/** Markdown を「要約」「ログ」の 2 タブ構成の body HTML にする。未知の h2 セクションはログ側 */
+function noteBody(md) {
   const parts = md.split(/^(?=## )/m); // 先頭チャンク (h1 等) + h2 セクション群
   let head = '', summary = '', log = '';
   for (const p of parts) {
@@ -77,7 +83,7 @@ export function renderNotePage(title, md) {
     else if (SUMMARY_SECTIONS.has(m[1].trim())) summary += p;
     else log += p;
   }
-  const body = `${markdownToHtml(head)}
+  return `${markdownToHtml(head)}
 <nav class="tabs">
 <button data-tab="summary" class="active">要約</button>
 <button data-tab="log">ログ</button>
@@ -95,7 +101,33 @@ for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('c
   document.getElementById('tab-log').hidden = b.dataset.tab !== 'log';
 });
 </script>`;
-  return renderPage(title, body);
+}
+
+export function renderNotePage(title, md) {
+  return renderPage(title, noteBody(md));
+}
+
+// Artifact 用: claude.ai 側が doctype/head/body を付けるので、title + style + body のみを出す。
+// テーマは 3 状態（明示 light / 明示 dark / システム依存）に対応する
+const ARTIFACT_THEME = `
+:root{--fg:#20262e;--bg:#faf9f5;--muted:#5d6672;--line:#dcded8;--code:#f0f1ec;--accent:#2f6b4f}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--fg:#e6ebee;--bg:#14181d;--muted:#96a0aa;--line:#2b333c;--code:#1c2229;--accent:#63b58c}}
+:root[data-theme="dark"]{--fg:#e6ebee;--bg:#14181d;--muted:#96a0aa;--line:#2b333c;--code:#1c2229;--accent:#63b58c}
+`.trim();
+
+export function renderArtifact(title, md) {
+  return `<title>${esc(title)}</title>
+<style>
+${ARTIFACT_THEME}
+${BASE_CSS}
+h1{color:var(--accent)}
+main{padding-top:24px}
+</style>
+<main>
+${noteBody(md)}
+<footer>claude-note で生成</footer>
+</main>
+`;
 }
 
 export function renderPage(title, bodyHtml) {
