@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { markdownToHtml, renderPage } from '../scripts/lib/html.mjs';
+import { markdownToHtml, renderPage, renderNotePage } from '../scripts/lib/html.mjs';
 
 test('headings, lists, inline code and paragraphs are converted', () => {
   const html = markdownToHtml('# 見出し\n\n## 小見出し\n\n- 編集: `a.ts`\n- 実行\n\n段落 <b>');
@@ -24,4 +24,19 @@ test('renderPage wraps body with title and inline css', () => {
   assert.match(page, /<title>作業ノート 2026-08-31<\/title>/);
   assert.match(page, /<style>/);
   assert.match(page, /<p>x<\/p>/);
+});
+
+test('renderNotePage splits sections into summary and log tabs', () => {
+  const md = ['# 作業ノート 2026-09-02', '## 本日のまとめ', 'まとめ文', '## セッション一覧', '| a |', '|---|', '| 1 |',
+    '## タイムライン', '### 10:00 x', '- 編集: `a`', '## 作成・変更したファイル', '- なし',
+    '## 実行したコマンド', '- なし', '## エラー・失敗', '- なし', '## 統計', 'セッション 1'].join('\n\n');
+  const page = renderNotePage('作業ノート 2026-09-02', md);
+  const summary = /<section id="tab-summary"[^>]*>([\s\S]*?)<\/section>/.exec(page)[1];
+  const log = /<section id="tab-log"[^>]*>([\s\S]*?)<\/section>/.exec(page)[1];
+  assert.match(page, /<button[^>]*data-tab="summary"[^>]*>要約<\/button>/);
+  assert.match(page, /<button[^>]*data-tab="log"[^>]*>ログ<\/button>/);
+  for (const h of ['本日のまとめ', 'セッション一覧', '統計']) assert.match(summary, new RegExp(`<h2>${h}</h2>`));
+  for (const h of ['タイムライン', '作成・変更したファイル', '実行したコマンド', 'エラー・失敗']) assert.match(log, new RegExp(`<h2>${h}</h2>`));
+  assert.match(log, /hidden/);
+  assert.doesNotMatch(/<section id="tab-summary"[^>]*>/.exec(page)[0], /hidden/);
 });

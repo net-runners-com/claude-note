@@ -3,7 +3,7 @@
 //   node render-html.mjs [YYYY-MM-DD] [--out DIR]
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { markdownToHtml, renderPage } from './lib/html.mjs';
+import { renderNotePage } from './lib/html.mjs';
 import { parseArgs, defaultNoteDir } from './build-note.mjs';
 import { dayOf } from './lib/transcript.mjs';
 
@@ -15,5 +15,5 @@ const mdPath = join(dir, `${date}.md`);
 if (!existsSync(mdPath)) { console.error(`ノートがありません: ${mdPath}`); process.exit(1); }
 const md = readFileSync(mdPath, 'utf8');
 const htmlPath = join(dir, `${date}.html`);
-writeFileSync(htmlPath, renderPage(`作業ノート ${date}`, markdownToHtml(md)));
+writeFileSync(htmlPath, renderNotePage(`作業ノート ${date}`, md));
 process.stdout.write(htmlPath + '\n');

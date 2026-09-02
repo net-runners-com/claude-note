@@ -58,7 +58,44 @@ th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;white-space:
 ul{padding-left:1.4em}li{margin:.2em 0}
 p{white-space:pre-wrap}
 footer{margin-top:3em;color:var(--muted);font-size:.85em}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:8px;margin:20px 0 4px;border-bottom:1px solid var(--line)}
+.tabs button{appearance:none;border:1px solid var(--line);border-bottom:none;border-radius:8px 8px 0 0;background:var(--code);color:var(--muted);font:inherit;padding:8px 22px;cursor:pointer}
+.tabs button.active{background:var(--bg);color:var(--fg);font-weight:600;position:relative;top:1px}
 `.trim();
+
+const SUMMARY_SECTIONS = new Set(['本日のまとめ', 'セッション一覧', '統計']);
+
+/** Markdown を「要約」「ログ」の 2 タブ構成のページにする。未知の h2 セクションはログ側 */
+export function renderNotePage(title, md) {
+  const parts = md.split(/^(?=## )/m); // 先頭チャンク (h1 等) + h2 セクション群
+  let head = '', summary = '', log = '';
+  for (const p of parts) {
+    const m = /^## (.+)$/m.exec(p);
+    if (!m) head += p;
+    else if (SUMMARY_SECTIONS.has(m[1].trim())) summary += p;
+    else log += p;
+  }
+  const body = `${markdownToHtml(head)}
+<nav class="tabs">
+<button data-tab="summary" class="active">要約</button>
+<button data-tab="log">ログ</button>
+</nav>
+<section id="tab-summary">
+${markdownToHtml(summary)}
+</section>
+<section id="tab-log" hidden>
+${markdownToHtml(log)}
+</section>
+<script>
+for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('click', () => {
+  for (const x of document.querySelectorAll('.tabs button')) x.classList.toggle('active', x === b);
+  document.getElementById('tab-summary').hidden = b.dataset.tab !== 'summary';
+  document.getElementById('tab-log').hidden = b.dataset.tab !== 'log';
+});
+</script>`;
+  return renderPage(title, body);
+}
 
 export function renderPage(title, bodyHtml) {
   return `<!doctype html>
