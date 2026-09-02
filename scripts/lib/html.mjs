@@ -37,7 +37,8 @@ export function markdownToHtml(md) {
       out.push(`<table>\n<thead><tr>${head}</tr></thead>\n<tbody>\n${body.join('\n')}\n</tbody>\n</table>`);
       continue;
     }
-    const para = [];
+    // どの構文にも当たらなかった行は段落として必ず 1 行以上消費する（無限ループ防止）
+    const para = [lines[i++]];
     while (i < lines.length && lines[i].trim() && !/^(#|- |\|)/.test(lines[i])) para.push(lines[i]), i++;
     out.push(`<p>${inline(para.join('\n')).replace(/\n/g, '<br>')}</p>`);
   }

@@ -15,6 +15,10 @@ test('tables are converted with header row', () => {
   assert.match(html, /<table>\n<thead><tr><th>a<\/th><th>b<\/th><\/tr><\/thead>\n<tbody>\n<tr><td>1<\/td><td>x\|y<\/td><\/tr>\n<\/tbody>\n<\/table>/);
 });
 
+test('a table row without a separator line terminates as a paragraph', () => {
+  assert.match(markdownToHtml('| a |\n\nx'), /<p>\| a \|<\/p>/);
+});
+
 test('html comments are dropped', () => {
   assert.doesNotMatch(markdownToHtml('<!-- summary:start -->\nまとめ\n<!-- summary:end -->'), /summary:start/);
 });
@@ -27,7 +31,7 @@ test('renderPage wraps body with title and inline css', () => {
 });
 
 test('renderNotePage splits sections into summary and log tabs', () => {
-  const md = ['# 作業ノート 2026-09-02', '## 本日のまとめ', 'まとめ文', '## セッション一覧', '| a |', '|---|', '| 1 |',
+  const md = ['# 作業ノート 2026-09-02', '## 本日のまとめ', 'まとめ文', '## セッション一覧', '| a |\n|---|\n| 1 |',
     '## タイムライン', '### 10:00 x', '- 編集: `a`', '## 作成・変更したファイル', '- なし',
     '## 実行したコマンド', '- なし', '## エラー・失敗', '- なし', '## 統計', 'セッション 1'].join('\n\n');
   const page = renderNotePage('作業ノート 2026-09-02', md);
