@@ -41,6 +41,6 @@ test('renderNotePage splits sections into summary and log tabs', () => {
   assert.match(page, /<button[^>]*data-tab="log"[^>]*>ログ<\/button>/);
   for (const h of ['本日のまとめ', 'セッション一覧', '統計']) assert.match(summary, new RegExp(`<h2>${h}</h2>`));
   for (const h of ['タイムライン', '作成・変更したファイル', '実行したコマンド', 'エラー・失敗']) assert.match(log, new RegExp(`<h2>${h}</h2>`));
-  assert.match(log, /hidden/);
-  assert.doesNotMatch(/<section id="tab-summary"[^>]*>/.exec(page)[0], /hidden/);
+  assert.match(page, /<section id="tab-log" hidden>/);
+  assert.match(page, /<section id="tab-summary">/);
 });
