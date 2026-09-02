@@ -135,3 +135,14 @@ README に Node 18+ 要件と `/note` の使い方を記す。
 - 複数日のまとめ（週報）
 - Artifact（claude.ai）への自動公開
 - ノートの note.com 投稿
+
+## 実装時の追加決定（2026-08-31、実データで検証して判明）
+
+- **サブエージェント transcript** は `<proj>/<session>/subagents/agent-*.jsonl` にある。走査対象に含め、`isSidechain: true` の user 行（タスク文）はプロンプトとして数えない。ツール呼出は「うちサブエージェント」に計上。
+- **除外セッション**: プロンプト 0 のセッション（hook だけが動いたもの）と、cwd が `CLAUDE_NOTE_EXCLUDE`（既定 `.claude-mem`）を含むセッション。claude-mem の observer セッションが 1 日 50 件以上混入していたため。
+- **`<task-notification>` 等**: タグで始まる user 行はシステム注入として除外（`<command-name>` のみコマンドとして残す）。
+- **秘密情報のマスク** (`scripts/lib/redact.mjs`): 実データのコマンドに API キーが平文で入っていた。`KEY=value` / `Authorization: Bearer` / 既知接頭辞 / 長い hex を `•••` に置換してからノートに載せる。取りこぼしはあり得るので README に目視確認を明記。
+- **短縮 digest** (`scripts/lib/compact.mjs`): 実データの digest は 300KB あった。stdout に出すのは短縮版のみ（予算 12,000 文字）。予算超過時は 返答を落とす → プロンプト 60 字・カウント省略 → タイムライン半減（`truncated` に注記）の順で縮める。全文は Markdown 側にある。
+- **作業時間**は並行セッションを重複計上しないよう、全イベントの時刻を合成して算出。
+- **同一コマンド**は回数で集約（`×N`）。複数行コマンドは 1 行に畳む。
+- **パス**はホームディレクトリを `~` に短縮。

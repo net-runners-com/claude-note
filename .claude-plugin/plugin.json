@@ -1,0 +1,7 @@
+{
+  "name": "claude-note",
+  "version": "0.1.0",
+  "description": "Claude Code の transcript からその日の作業ノート（日本語 Markdown/HTML）を生成する /note コマンド",
+  "author": { "name": "net-runners" },
+  "keywords": ["note", "report", "daily", "transcript"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "claude-note",
+  "owner": { "name": "net-runners" },
+  "plugins": [
+    {
+      "name": "claude-note",
+      "source": "./",
+      "description": "Claude Code の transcript からその日の作業ノート（日本語 Markdown/HTML）を生成する /note コマンド"
+    }
+  ]
+}
